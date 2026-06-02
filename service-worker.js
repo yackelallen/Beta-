@@ -1,4 +1,4 @@
-const CACHE_NAME = "yit-beta-cache-BETA-1.2";
+const CACHE_NAME = "yit-beta-cache-BETA-1.3";
 
 const CORE_FILES = [
   "./",
