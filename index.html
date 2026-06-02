@@ -1219,8 +1219,25 @@ function forceBetaRefresh(){
   window.location.href = window.location.pathname + '?fresh=' + Date.now();
  }
 }
+const YIT_CURRENT_VERSION = "BETA-1.4";
 
-window.onload=function(){if(typeof updateValveTable==='function'){updateValveTable();}updateValveTable();buildSheet();renderSaved();calcRTDTemp();calcRTDOhms();calcTCmV();calcTCTemp();maToEU();euToMa();calc250();loopLoad();}
+function checkForYITUpdate(){
+  fetch("./version.json?cb=" + Date.now(), { cache: "no-store" })
+    .then(res => res.json())
+    .then(data => {
+      if (data.version && data.version !== YIT_CURRENT_VERSION) {
+        alert(
+          "Update Available!\n\nCurrent: " +
+          YIT_CURRENT_VERSION +
+          "\nLatest: " +
+          data.version +
+          "\n\nTap Refresh Beta / Get Latest Version."
+        );
+      }
+    })
+ .catch(() => {});
+}
+ window.onload=function(){checkForYITUpdate();
 
 
 setTimeout(function(){
