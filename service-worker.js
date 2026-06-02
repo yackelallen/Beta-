@@ -1,6 +1,6 @@
-const CACHE_NAME = "yit-beta-cache-BETA-1.3";
+const CACHE_NAME = "yit-beta-cache-BETA-1.4";
 
-const CORE_FILES = [
+const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.json",
@@ -10,7 +10,7 @@ const CORE_FILES = [
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(CORE_FILES).catch(() => Promise.resolve());
+      return cache.addAll(APP_FILES).catch(() => Promise.resolve());
     })
   );
 });
@@ -27,21 +27,10 @@ self.addEventListener("activate", event => {
   );
 });
 
-self.addEventListener("message", event => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});
-
 self.addEventListener("fetch", event => {
   const req = event.request;
-  const url = new URL(req.url);
 
-  if (
-    req.mode === "navigate" ||
-    url.pathname.endsWith("/") ||
-    url.pathname.endsWith("/index.html")
-  ) {
+  if (req.mode === "navigate") {
     event.respondWith(
       fetch(req, { cache: "no-store" })
         .then(response => {
