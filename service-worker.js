@@ -1,16 +1,17 @@
-const CACHE_NAME = "yit-beta-cache-BETA-1.4";
+const CACHE_NAME = "yit-beta-cache-v1-5";
 
-const APP_FILES = [
-  "./",
-  "./index.html",
+const urlsToCache = [
   "./manifest.json",
-  "./icon-512-BETA.png"
+  "./icon-512-BETA.png",
+  "./version.json"
 ];
 
 self.addEventListener("install", event => {
+  self.skipWaiting();
+
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(APP_FILES).catch(() => Promise.resolve());
+      return cache.addAll(urlsToCache);
     })
   );
 });
@@ -19,37 +20,30 @@ self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys => {
       return Promise.all(
-        keys
-          .filter(key => key.startsWith("yit-beta-cache-") && key !== CACHE_NAME)
-          .map(key => caches.delete(key))
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
       );
     }).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", event => {
-  const req = event.request;
+  const requestUrl = new URL(event.request.url);
 
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req, { cache: "no-store" })
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
-          return response;
-        })
-        .catch(() => caches.match("./index.html"))
-    );
+  if (
+    requestUrl.pathname.endsWith("/") ||
+    requestUrl.pathname.endsWith("/index.html")
+  ) {
+    event.respondWith(fetch(event.request));
     return;
   }
 
   event.respondWith(
-    caches.match(req).then(cached => {
-      return cached || fetch(req).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-        return response;
-      });
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
     })
   );
 });
